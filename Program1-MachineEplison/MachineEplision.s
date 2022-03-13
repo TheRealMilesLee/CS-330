@@ -27,8 +27,12 @@ answer:
 main:
 	la	$a0, sample_output1	# Load the address of origional string into $a0
 	jal	printString		# Jump to printString and save position to $ra
-	addiu $v0, 0
-	addiu $a0, 0
+
+	la $a0, answer
+	la $a1, half
+	li $a2, 52
+	jal   power
+
 	jal		printDouble				# jump to printDouble and save position to $ra
 
 
@@ -83,14 +87,16 @@ power:
 	# $a1 is the base
 	# $a2 is the power
 	# $t1 is the counter for the multiplication
-	l.d $f1, answer	# Load the answer address into $f1
-	l.d $f2, half	# Load the base address into $f2
-	addiu $t1, $t1, 0	# Initialize the $t1 to 0
+	l.d $f2, answer	# Load the answer address into $f1
+	l.d $f4, half	# Load the base address into $f2
+	mov.d $f2, $f4
+	addiu $t1, $t1, 1	# Initialize the $t1 to 1
 	loop:
-		bge	$t1, $a2, exit	# If $t2 >= $a2 then end loop
-		mul.d $f2, $f2, $f2
+		bge	$t1, $a2, exit	# If $t1 >= $a2 then end loop
+		mul.d $f4, $f4, $f2
+		s.d $f4, answer
 		addiu	$t1, $t1, 1	# $t1 = $t1 + 1
 		j 	loop		# Continue looping
 	exit:
-		s.d $f2, answer
-		jr	$ra		# return
+
+	jr	$ra		# return
