@@ -12,9 +12,14 @@ sample_output4:
 	.asciiz "(1 + (0.5^53 + 0.5^54)) - 1 = "
 sample_output5:
 	.asciiz "(1 + (0.5^53 + 0.5^105)) - 1 = "
-
 newline:
 	.asciiz "\n"
+one:
+	.double 1.0
+half:
+	.double 0.5
+answer:
+	.double 0.0
 
 .text
 .globl main
@@ -22,6 +27,12 @@ newline:
 main:
 	la	$a0, sample_output1	# Load the address of origional string into $a0
 	jal	printString		# Jump to printString and save position to $ra
+	addiu $v0, 0
+	addiu $a0, 0
+	jal		printDouble				# jump to printDouble and save position to $ra
+
+
+
 
 	jal	printNewLine		# Print the newline
 
@@ -62,8 +73,8 @@ printString:
 	jr	$ra		# Return
 
 printDouble:
-	li	$v0, 3   	# Call the syscall to print the Double
-	mov.d	$f12, $f2	# Store the result to $f12
+	l.d		$f12, answer	# Load the double to be printed
+	li $v0, 3
 	syscall
 	jr	$ra		# return
 
@@ -71,16 +82,15 @@ power:
 	# $a0 is the final result
 	# $a1 is the base
 	# $a2 is the power
-	move	$a0, 0	# $a0 = 0
-	move	$t1, 0	# $t1 = 0
+	# $t1 is the counter for the multiplication
+	l.d $f1, answer	# Load the answer address into $f1
+	l.d $f2, half	# Load the base address into $f2
+	addiu $t1, $t1, 0	# Initialize the $t1 to 0
 	loop:
 		bge	$t1, $a2, exit	# If $t2 >= $a2 then end loop
-		mult	$a1, $a1	# $a1 * $a1 = Hi and Lo registers
-		mflo	$a0		# store the result to $a0
-		addi	$t1, $t1, 1	# $t1 = $t1 + 1
+		mul.d $f2, $f2, $f2
+		addiu	$t1, $t1, 1	# $t1 = $t1 + 1
 		j 	loop		# Continue looping
 	exit:
+		s.d $f2, answer
 		jr	$ra		# return
-
-
-
